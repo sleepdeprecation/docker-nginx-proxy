@@ -1,0 +1,46 @@
+# vim: set ft=nginx:
+server {
+  listen {{PORT}} {% if USE_HTTPS == "true" %}ssl{% endif %} default_server;
+
+  {% if USE_HTTPS == "true" %}
+  ssl_certificate     /etc/ssl/certs/nginx-selfsigned.crt;
+  ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+
+  ssl_protocols TLSv1.2 TLSv1.3; # disable outdated ssl version
+  ssl_ciphers "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA HIGH !RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"; # disable weak ssl ciphers
+  {% endif %}
+
+{% if ALLOWED_PATHS == "*" %}
+  location / {
+    proxy_pass {{BASE_URL}};
+    proxy_ssl_server_name on;
+  }
+{% else %}
+  location / {
+    return 404;
+  }
+
+  location /health {
+    return 200;
+  }
+
+  {%- assign base_split = BASE_URL | split: "/" | last -%}
+  {%- if base_split != "" -%}{%- assign BASE_URL = BASE_URL | append: "/" %}{%- endif -%}
+  {% assign allowed_paths = ALLOWED_PATHS | split:',' %}
+{% for path in allowed_paths %}
+  {%- assign path_split = path | split: "/" | first -%}
+  {%- if path_split != "" -%}
+    {%- assign loc_frag = path | prepend: "/" -%}
+    {%- assign path_frag = path -%}
+  {%- else -%}
+    {%- assign loc_frag = path -%}
+    {%- assign path_frag = path | remove_first: "/" -%}
+  {%- endif %}
+  location {{loc_frag}} {
+    proxy_pass {{BASE_URL}}{{path_frag}};
+    proxy_ssl_server_name on;
+  }
+{% endfor %}
+
+{% endif %}
+}
