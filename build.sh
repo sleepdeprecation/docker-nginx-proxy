@@ -6,7 +6,7 @@ set -x -e
 # so I can get the container out into the world
 
 # INCREMENT THIS WHEN BUILDING A NEW VERSION
-VERSION="0.0.1"
+VERSION="0.0.2"
 
 IMAGE_REPO="ghcr.io/sleepdeprecation/nginx-proxy"
 
