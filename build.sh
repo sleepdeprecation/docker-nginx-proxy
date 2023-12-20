@@ -10,7 +10,6 @@ VERSION="0.0.1"
 
 IMAGE_REPO="ghcr.io/sleepdeprecation/nginx-proxy"
 
-docker build -t "$IMAGE_REPO:latest" .
-docker tag "$IMAGE_REPO:latest" "$IMAGE_REPO:$VERSION"
-
-docker push --all-tags "$IMAGE_REPO"
+docker buildx build --push \
+  --platform linux/amd64,linux/arm64 \
+  --tag "$IMAGE_REPO:$VERSION" --tag "$IMAGE_REPO:latest" .

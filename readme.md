@@ -1,4 +1,4 @@
-# docker-nginx-proxy
+# nginx-proxy
 
 a simple docker container that runs nginx as a reverse proxy, configured using environment variables
 
